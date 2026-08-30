@@ -405,7 +405,6 @@ ASTNodePtr Parser::factor()
 // Unary
 // ! -
 // ===============================
-
 ASTNodePtr Parser::unary()
 {
     if (
@@ -417,8 +416,7 @@ ASTNodePtr Parser::unary()
 
         ASTNodePtr right = unary();
 
-        return std::make_shared<BinaryExpression>(
-            std::make_shared<NumberExpression>("0"),
+        return std::make_shared<UnaryExpression>(
             op.getLexeme(),
             right
         );
@@ -426,7 +424,6 @@ ASTNodePtr Parser::unary()
 
     return primary();
 }
-
 
 // ===============================
 // Primary

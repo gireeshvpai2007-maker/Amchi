@@ -128,5 +128,24 @@ public:
 
     std::string toString() const override;
 };
+class UnaryExpression : public ASTNode
+{
+public:
+    UnaryExpression(
+        const std::string& op,
+        ASTNodePtr right
+    )
+        : op(op), right(right)
+    {
+    }
 
+    std::string toString() const override
+    {
+        return "(" + op + " " + right->toString() + ")";
+    }
+
+private:
+    std::string op;
+    ASTNodePtr right;
+};
 #endif
