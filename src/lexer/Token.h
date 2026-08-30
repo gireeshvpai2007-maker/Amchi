@@ -5,39 +5,33 @@
 
 enum class TokenType {
 
-    // ---------- Keywords ----------
-    GHE,            // variable
-    DHAKE,          // print
-    NIMGI,          // input
-    JALLARI,        // if
-    NAJALLARI,      // else
-    JAVCHVARE,      // while
-    KAAM,           // function
-    VISHAY,         // class
-    SHURU,          // main
-    JAAG,           // address-of
+    GHE,
+    DHAKE,
+    NIMGI,
+    JALLARI,
+    NAJALLARI,
+    JAVCHVARE,
+    KAAM,
+    VISHAY,
+    SHURU,
+    JAAG,
 
-    // ---------- Literals ----------
     NUMBER,
     STRING,
     TRUE,
     FALSE,
     NULL_VALUE,
 
-    // ---------- Identifier ----------
     IDENTIFIER,
 
-    // ---------- Arithmetic Operators ----------
     PLUS,
     MINUS,
     MULTIPLY,
     DIVIDE,
     MODULO,
 
-    // ---------- Assignment ----------
     ASSIGN,
 
-    // ---------- Comparison ----------
     EQUAL_EQUAL,
     NOT_EQUAL,
     GREATER,
@@ -45,15 +39,12 @@ enum class TokenType {
     GREATER_EQUAL,
     LESS_EQUAL,
 
-    // ---------- Logical ----------
     AND,
     OR,
     NOT,
 
-    // ---------- Input ----------
     INPUT,
 
-    // ---------- Symbols ----------
     LEFT_PAREN,
     RIGHT_PAREN,
     LEFT_BRACE,
@@ -61,11 +52,11 @@ enum class TokenType {
     SEMICOLON,
     COMMA,
 
-    // ---------- Special ----------
     END_OF_FILE,
     UNKNOWN
 };
 
+std::string tokenTypeToString(TokenType type);
 
 class Token {
 

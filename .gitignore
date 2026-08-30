@@ -1,6 +1,10 @@
+# Build files
 *.o
 *.exe
 *.out
-*.obj
-build/
+
+# VS Code
 .vscode/
+
+# Build directory
+build/
