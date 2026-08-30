@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <memory>
+#include <string>
 
 #include "../lexer/Token.h"
 #include "../ast/ast.h"
@@ -29,16 +30,21 @@ private:
 
     Token consume(TokenType type, const std::string& message);
 
-    // Expressions
-    ASTNodePtr expression();
-    ASTNodePtr primary();
-
     // Statements
     ASTNodePtr statement();
     ASTNodePtr variableDeclaration();
-
-    // Functions
     ASTNodePtr functionDeclaration();
+
+    // Expressions
+    ASTNodePtr expression();
+    ASTNodePtr orExpression();
+    ASTNodePtr andExpression();
+    ASTNodePtr equality();
+    ASTNodePtr comparison();
+    ASTNodePtr term();
+    ASTNodePtr factor();
+    ASTNodePtr unary();
+    ASTNodePtr primary();
 };
 
 #endif

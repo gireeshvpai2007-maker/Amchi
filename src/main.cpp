@@ -7,16 +7,11 @@
 #include "ast/ast.h"
 
 int main()
-{
-    std::string source = R"(
-        ghe a = 10;
-        ghe b = 20;
-
-        kaam shuru() {
-            ghe c = a + b;
-        }
-    )";
-
+{std::string source = R"(
+    ghe a = 10 + 20 * 3;
+    ghe b = (10 + 20) * 3;
+    ghe c = a > b;
+)";
     // ===============================
     // Lexical Analysis
     // ===============================

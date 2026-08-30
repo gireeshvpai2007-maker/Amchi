@@ -1,6 +1,5 @@
 #include "parser.h"
 
-#include <iostream>
 #include <stdexcept>
 
 
@@ -229,25 +228,23 @@ ASTNodePtr Parser::functionDeclaration()
 
 ASTNodePtr Parser::expression()
 {
-    ASTNodePtr left = primary();
+    return orExpression();
+}
 
-    while (
-        check(TokenType::PLUS) ||
-        check(TokenType::MINUS) ||
-        check(TokenType::MULTIPLY) ||
-        check(TokenType::DIVIDE) ||
-        check(TokenType::MODULO) ||
-        check(TokenType::EQUAL_EQUAL) ||
-        check(TokenType::NOT_EQUAL) ||
-        check(TokenType::GREATER) ||
-        check(TokenType::LESS) ||
-        check(TokenType::GREATER_EQUAL) ||
-        check(TokenType::LESS_EQUAL)
-    )
+
+// ===============================
+// OR
+// ===============================
+
+ASTNodePtr Parser::orExpression()
+{
+    ASTNodePtr left = andExpression();
+
+    while (match(TokenType::OR))
     {
-        Token op = advance();
+        Token op = previous();
 
-        ASTNodePtr right = primary();
+        ASTNodePtr right = andExpression();
 
         left = std::make_shared<BinaryExpression>(
             left,
@@ -261,7 +258,178 @@ ASTNodePtr Parser::expression()
 
 
 // ===============================
-// Primary Expressions
+// AND
+// ===============================
+
+ASTNodePtr Parser::andExpression()
+{
+    ASTNodePtr left = equality();
+
+    while (match(TokenType::AND))
+    {
+        Token op = previous();
+
+        ASTNodePtr right = equality();
+
+        left = std::make_shared<BinaryExpression>(
+            left,
+            op.getLexeme(),
+            right
+        );
+    }
+
+    return left;
+}
+
+
+// ===============================
+// Equality
+// == !=
+// ===============================
+
+ASTNodePtr Parser::equality()
+{
+    ASTNodePtr left = comparison();
+
+    while (
+        match(TokenType::EQUAL_EQUAL) ||
+        match(TokenType::NOT_EQUAL)
+    )
+    {
+        Token op = previous();
+
+        ASTNodePtr right = comparison();
+
+        left = std::make_shared<BinaryExpression>(
+            left,
+            op.getLexeme(),
+            right
+        );
+    }
+
+    return left;
+}
+
+
+// ===============================
+// Comparison
+// > < >= <=
+// ===============================
+
+ASTNodePtr Parser::comparison()
+{
+    ASTNodePtr left = term();
+
+    while (
+        match(TokenType::GREATER) ||
+        match(TokenType::LESS) ||
+        match(TokenType::GREATER_EQUAL) ||
+        match(TokenType::LESS_EQUAL)
+    )
+    {
+        Token op = previous();
+
+        ASTNodePtr right = term();
+
+        left = std::make_shared<BinaryExpression>(
+            left,
+            op.getLexeme(),
+            right
+        );
+    }
+
+    return left;
+}
+
+
+// ===============================
+// Term
+// + -
+// ===============================
+
+ASTNodePtr Parser::term()
+{
+    ASTNodePtr left = factor();
+
+    while (
+        match(TokenType::PLUS) ||
+        match(TokenType::MINUS)
+    )
+    {
+        Token op = previous();
+
+        ASTNodePtr right = factor();
+
+        left = std::make_shared<BinaryExpression>(
+            left,
+            op.getLexeme(),
+            right
+        );
+    }
+
+    return left;
+}
+
+
+// ===============================
+// Factor
+// * / %
+// ===============================
+
+ASTNodePtr Parser::factor()
+{
+    ASTNodePtr left = unary();
+
+    while (
+        match(TokenType::MULTIPLY) ||
+        match(TokenType::DIVIDE) ||
+        match(TokenType::MODULO)
+    )
+    {
+        Token op = previous();
+
+        ASTNodePtr right = unary();
+
+        left = std::make_shared<BinaryExpression>(
+            left,
+            op.getLexeme(),
+            right
+        );
+    }
+
+    return left;
+}
+
+
+// ===============================
+// Unary
+// ! -
+// ===============================
+
+ASTNodePtr Parser::unary()
+{
+    if (
+        match(TokenType::NOT) ||
+        match(TokenType::MINUS)
+    )
+    {
+        Token op = previous();
+
+        ASTNodePtr right = unary();
+
+        return std::make_shared<BinaryExpression>(
+            std::make_shared<NumberExpression>("0"),
+            op.getLexeme(),
+            right
+        );
+    }
+
+    return primary();
+}
+
+
+// ===============================
+// Primary
 // ===============================
 
 ASTNodePtr Parser::primary()
@@ -286,15 +454,14 @@ ASTNodePtr Parser::primary()
 
         consume(
             TokenType::RIGHT_PAREN,
-            "Expected ')'."
+            "Expected ')' after expression."
         );
 
         return expr;
     }
 
     throw std::runtime_error(
-        "Parser error: Unexpected token '" +
-        peek().getLexeme() +
-        "'"
+        "Unexpected token: " +
+        peek().getLexeme()
     );
 }
