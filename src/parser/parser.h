@@ -1,47 +1,44 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#include <string>
 #include <vector>
+#include <memory>
 
 #include "../lexer/Token.h"
+#include "../ast/ast.h"
 
-class Parser {
-
+class Parser
+{
 public:
-
     Parser(const std::vector<Token>& tokens);
 
-    void parse();
+    std::vector<ASTNodePtr> parse();
 
 private:
-
-    std::vector<Token> tokens;
+    const std::vector<Token>& tokens;
     int current;
 
-    void functionDeclaration();
-    void block();
-
-    void statement();
-    void variableDeclaration();
-    void printStatement();
-    void expressionStatement();
-
-    void expression();
-    void addition();
-    void primary();
-
-    bool match(TokenType type);
-    bool match(TokenType type1, TokenType type2);
-
-    bool check(TokenType type);
+    // Utility
     bool isAtEnd();
-
-    Token advance();
     Token peek();
     Token previous();
+    Token advance();
+
+    bool check(TokenType type);
+    bool match(TokenType type);
 
     Token consume(TokenType type, const std::string& message);
+
+    // Expressions
+    ASTNodePtr expression();
+    ASTNodePtr primary();
+
+    // Statements
+    ASTNodePtr statement();
+    ASTNodePtr variableDeclaration();
+
+    // Functions
+    ASTNodePtr functionDeclaration();
 };
 
 #endif

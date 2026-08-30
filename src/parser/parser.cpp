@@ -1,241 +1,53 @@
-#include "Parser.h"
+#include "parser.h"
+
 #include <iostream>
+#include <stdexcept>
+
 
 Parser::Parser(const std::vector<Token>& tokens)
     : tokens(tokens), current(0)
 {
 }
 
-void Parser::parse()
+
+// ===============================
+// Parser Entry Point
+// ===============================
+
+std::vector<ASTNodePtr> Parser::parse()
 {
+    std::vector<ASTNodePtr> statements;
+
     while (!isAtEnd())
     {
-        functionDeclaration();
+        statements.push_back(statement());
     }
 
-    std::cout << "Parsing completed successfully.\n";
+    return statements;
 }
 
-void Parser::functionDeclaration()
-{
-    consume(
-        TokenType::KAAM,
-        "Expected 'kaam' at beginning of function."
-    );
 
-    consume(
-        TokenType::IDENTIFIER,
-        "Expected function name."
-    );
-
-    consume(
-        TokenType::LEFT_PAREN,
-        "Expected '(' after function name."
-    );
-
-    consume(
-        TokenType::RIGHT_PAREN,
-        "Expected ')' after function parameters."
-    );
-
-    block();
-}
-
-void Parser::block()
-{
-    consume(
-        TokenType::LEFT_BRACE,
-        "Expected '{' before function body."
-    );
-
-    while (!check(TokenType::RIGHT_BRACE) &&
-           !isAtEnd())
-    {
-        statement();
-    }
-
-    consume(
-        TokenType::RIGHT_BRACE,
-        "Expected '}' after function body."
-    );
-}
-
-void Parser::statement()
-{
-    if (match(TokenType::GHE))
-    {
-        variableDeclaration();
-    }
-    else if (match(TokenType::DHAKE))
-    {
-        printStatement();
-    }
-    else
-    {
-        expressionStatement();
-    }
-}
-
-void Parser::variableDeclaration()
-{
-    consume(
-        TokenType::IDENTIFIER,
-        "Expected variable name after 'ghe'."
-    );
-
-    consume(
-        TokenType::ASSIGN,
-        "Expected '=' after variable name."
-    );
-
-    expression();
-
-    consume(
-        TokenType::SEMICOLON,
-        "Expected ';' after variable declaration."
-    );
-}
-
-void Parser::printStatement()
-{
-    consume(
-        TokenType::LEFT_PAREN,
-        "Expected '(' after 'dhake'."
-    );
-
-    expression();
-
-    consume(
-        TokenType::RIGHT_PAREN,
-        "Expected ')' after expression."
-    );
-
-    consume(
-        TokenType::SEMICOLON,
-        "Expected ';' after print statement."
-    );
-}
-
-void Parser::expressionStatement()
-{
-    expression();
-
-    consume(
-        TokenType::SEMICOLON,
-        "Expected ';' after expression."
-    );
-}
-
-void Parser::expression()
-{
-    addition();
-}
-
-void Parser::addition()
-{
-    primary();
-
-    while (match(TokenType::PLUS, TokenType::MINUS))
-    {
-        primary();
-    }
-}
-
-void Parser::primary()
-{
-    if (match(TokenType::NUMBER))
-    {
-        return;
-    }
-
-    if (match(TokenType::STRING))
-    {
-        return;
-    }
-
-    if (match(TokenType::IDENTIFIER))
-    {
-        return;
-    }
-
-    if (match(TokenType::TRUE))
-    {
-        return;
-    }
-
-    if (match(TokenType::FALSE))
-    {
-        return;
-    }
-
-    if (match(TokenType::NULL_VALUE))
-    {
-        return;
-    }
-
-    if (match(TokenType::LEFT_PAREN))
-    {
-        expression();
-
-        consume(
-            TokenType::RIGHT_PAREN,
-            "Expected ')' after expression."
-        );
-
-        return;
-    }
-
-    std::cerr
-        << "Parser error: Expected expression near '"
-        << peek().getLexeme()
-        << "'\n";
-
-    advance();
-}
-
-bool Parser::match(TokenType type)
-{
-    if (!check(type))
-    {
-        return false;
-    }
-
-    advance();
-
-    return true;
-}
-
-bool Parser::match(TokenType type1, TokenType type2)
-{
-    if (check(type1))
-    {
-        advance();
-        return true;
-    }
-
-    if (check(type2))
-    {
-        advance();
-        return true;
-    }
-
-    return false;
-}
-
-bool Parser::check(TokenType type)
-{
-    if (isAtEnd())
-    {
-        return type == TokenType::END_OF_FILE;
-    }
-
-    return peek().getType() == type;
-}
+// ===============================
+// Utility Functions
+// ===============================
 
 bool Parser::isAtEnd()
 {
     return peek().getType() == TokenType::END_OF_FILE;
 }
+
+
+Token Parser::peek()
+{
+    return tokens[current];
+}
+
+
+Token Parser::previous()
+{
+    return tokens[current - 1];
+}
+
 
 Token Parser::advance()
 {
@@ -247,15 +59,29 @@ Token Parser::advance()
     return previous();
 }
 
-Token Parser::peek()
+
+bool Parser::check(TokenType type)
 {
-    return tokens[current];
+    if (isAtEnd())
+    {
+        return type == TokenType::END_OF_FILE;
+    }
+
+    return peek().getType() == type;
 }
 
-Token Parser::previous()
+
+bool Parser::match(TokenType type)
 {
-    return tokens[current - 1];
+    if (!check(type))
+    {
+        return false;
+    }
+
+    advance();
+    return true;
 }
+
 
 Token Parser::consume(
     TokenType type,
@@ -267,12 +93,208 @@ Token Parser::consume(
         return advance();
     }
 
-    std::cerr
-        << "Parser error: "
-        << message
-        << " Found '"
-        << peek().getLexeme()
-        << "' instead.\n";
+    throw std::runtime_error(
+        "Parser error: " + message
+    );
+}
 
-    return peek();
+
+// ===============================
+// Statements
+// ===============================
+
+ASTNodePtr Parser::statement()
+{
+    if (check(TokenType::KAAM))
+    {
+        return functionDeclaration();
+    }
+
+    if (check(TokenType::GHE))
+    {
+        return variableDeclaration();
+    }
+
+    return expression();
+}
+
+
+// ===============================
+// Variable Declaration
+// ===============================
+
+ASTNodePtr Parser::variableDeclaration()
+{
+    consume(
+        TokenType::GHE,
+        "Expected 'ghe'."
+    );
+
+    Token name = consume(
+        TokenType::IDENTIFIER,
+        "Expected variable name."
+    );
+
+    consume(
+        TokenType::ASSIGN,
+        "Expected '=' after variable name."
+    );
+
+    ASTNodePtr initializer = expression();
+
+    consume(
+        TokenType::SEMICOLON,
+        "Expected ';' after variable declaration."
+    );
+
+    return std::make_shared<VariableDeclaration>(
+        name.getLexeme(),
+        initializer
+    );
+}
+
+
+// ===============================
+// Function Declaration
+// ===============================
+
+ASTNodePtr Parser::functionDeclaration()
+{
+    consume(
+        TokenType::KAAM,
+        "Expected 'kaam'."
+    );
+
+    Token name = consume(
+        TokenType::IDENTIFIER,
+        "Expected function name."
+    );
+
+    consume(
+        TokenType::LEFT_PAREN,
+        "Expected '(' after function name."
+    );
+
+    std::vector<std::string> parameters;
+
+    if (!check(TokenType::RIGHT_PAREN))
+    {
+        do
+        {
+            Token parameter = consume(
+                TokenType::IDENTIFIER,
+                "Expected parameter name."
+            );
+
+            parameters.push_back(
+                parameter.getLexeme()
+            );
+
+        } while (match(TokenType::COMMA));
+    }
+
+    consume(
+        TokenType::RIGHT_PAREN,
+        "Expected ')' after parameters."
+    );
+
+    consume(
+        TokenType::LEFT_BRACE,
+        "Expected '{' before function body."
+    );
+
+    std::vector<ASTNodePtr> body;
+
+    while (!check(TokenType::RIGHT_BRACE) && !isAtEnd())
+    {
+        body.push_back(statement());
+    }
+
+    consume(
+        TokenType::RIGHT_BRACE,
+        "Expected '}' after function body."
+    );
+
+    return std::make_shared<FunctionDeclaration>(
+        name.getLexeme(),
+        parameters,
+        body
+    );
+}
+
+
+// ===============================
+// Expressions
+// ===============================
+
+ASTNodePtr Parser::expression()
+{
+    ASTNodePtr left = primary();
+
+    while (
+        check(TokenType::PLUS) ||
+        check(TokenType::MINUS) ||
+        check(TokenType::MULTIPLY) ||
+        check(TokenType::DIVIDE) ||
+        check(TokenType::MODULO) ||
+        check(TokenType::EQUAL_EQUAL) ||
+        check(TokenType::NOT_EQUAL) ||
+        check(TokenType::GREATER) ||
+        check(TokenType::LESS) ||
+        check(TokenType::GREATER_EQUAL) ||
+        check(TokenType::LESS_EQUAL)
+    )
+    {
+        Token op = advance();
+
+        ASTNodePtr right = primary();
+
+        left = std::make_shared<BinaryExpression>(
+            left,
+            op.getLexeme(),
+            right
+        );
+    }
+
+    return left;
+}
+
+
+// ===============================
+// Primary Expressions
+// ===============================
+
+ASTNodePtr Parser::primary()
+{
+    if (match(TokenType::NUMBER))
+    {
+        return std::make_shared<NumberExpression>(
+            previous().getLexeme()
+        );
+    }
+
+    if (match(TokenType::IDENTIFIER))
+    {
+        return std::make_shared<IdentifierExpression>(
+            previous().getLexeme()
+        );
+    }
+
+    if (match(TokenType::LEFT_PAREN))
+    {
+        ASTNodePtr expr = expression();
+
+        consume(
+            TokenType::RIGHT_PAREN,
+            "Expected ')'."
+        );
+
+        return expr;
+    }
+
+    throw std::runtime_error(
+        "Parser error: Unexpected token '" +
+        peek().getLexeme() +
+        "'"
+    );
 }
