@@ -1,63 +1,73 @@
 #include <iostream>
+#include <string>
 #include <vector>
-#include <memory>
 
 #include "lexer/Lexer.h"
 #include "parser/parser.h"
-#include "ast/ast.h"
+#include "interpreter/interpreter.h"
 
 int main()
-{std::string source = R"(
-    ghe a = 10 + 20 * 3;
-    ghe b = (10 + 20) * 3;
-    ghe c = a > b;
+{
+    std::string source = R"(
+kaam shuru {
+    ghe a = 10;
+    ghe b = 20;
+
+    jallari (a > b) {
+        dhake("a is greater");
+    }
+
+    najallari {
+        dhake("b is greater");
+    }
+}
 )";
-    // ===============================
-    // Lexical Analysis
-    // ===============================
+
+    // ============================================================
+    // LEXER
+    // ============================================================
 
     Lexer lexer(source);
 
     std::vector<Token> tokens = lexer.tokenize();
 
-    std::cout << "=== TOKENS ===\n\n";
+    std::cout << "===== TOKENS =====\n";
 
-    for (const Token& token : tokens)
+    for (const auto& token : tokens)
     {
         std::cout
-            << tokenTypeToString(token.getType())
+            << token.getTypeName()
             << " : "
             << token.getLexeme()
-            << "\n";
+            << '\n';
     }
 
 
-    // ===============================
-    // Parsing
-    // ===============================
+    // ============================================================
+    // PARSER
+    // ============================================================
 
-    std::cout << "\n=== AST ===\n\n";
+    Parser parser(tokens);
 
-    try
+    std::vector<ASTNodePtr> statements = parser.parse();
+
+    std::cout << "\n===== AST =====\n";
+
+    for (const auto& statement : statements)
     {
-        Parser parser(tokens);
-
-        std::vector<ASTNodePtr> ast = parser.parse();
-
-        for (const ASTNodePtr& node : ast)
-        {
-            std::cout << node->toString() << "\n";
-        }
+        std::cout << statement->toString() << '\n';
     }
-    catch (const std::exception& error)
-    {
-        std::cerr
-            << "Parser error: "
-            << error.what()
-            << "\n";
 
-        return 1;
-    }
+
+    // ============================================================
+    // INTERPRETER
+    // ============================================================
+
+    std::cout << "\n===== OUTPUT =====\n";
+
+    Interpreter interpreter;
+
+    interpreter.interpret(statements);
 
     return 0;
 }

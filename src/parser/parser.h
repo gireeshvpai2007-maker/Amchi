@@ -19,7 +19,7 @@ private:
     const std::vector<Token>& tokens;
     int current;
 
-    // Utility
+    // Parser utilities
     bool isAtEnd();
     Token peek();
     Token previous();
@@ -28,12 +28,17 @@ private:
     bool check(TokenType type);
     bool match(TokenType type);
 
-    Token consume(TokenType type, const std::string& message);
+    Token consume(
+        TokenType type,
+        const std::string& message
+    );
 
     // Statements
     ASTNodePtr statement();
     ASTNodePtr variableDeclaration();
     ASTNodePtr functionDeclaration();
+    ASTNodePtr ifStatement();
+    ASTNodePtr block();
 
     // Expressions
     ASTNodePtr expression();
@@ -44,6 +49,7 @@ private:
     ASTNodePtr term();
     ASTNodePtr factor();
     ASTNodePtr unary();
+    ASTNodePtr call();
     ASTNodePtr primary();
 };
 

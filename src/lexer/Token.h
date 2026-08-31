@@ -3,14 +3,15 @@
 
 #include <string>
 
-enum class TokenType {
-
+enum class TokenType
+{
     GHE,
     DHAKE,
     NIMGI,
     JALLARI,
     NAJALLARI,
     JAVCHVARE,
+
     KAAM,
     VISHAY,
     SHURU,
@@ -18,9 +19,6 @@ enum class TokenType {
 
     NUMBER,
     STRING,
-    TRUE,
-    FALSE,
-    NULL_VALUE,
 
     IDENTIFIER,
 
@@ -31,12 +29,12 @@ enum class TokenType {
     MODULO,
 
     ASSIGN,
-
     EQUAL_EQUAL,
     NOT_EQUAL,
+
     GREATER,
-    LESS,
     GREATER_EQUAL,
+    LESS,
     LESS_EQUAL,
 
     AND,
@@ -49,23 +47,29 @@ enum class TokenType {
     RIGHT_PAREN,
     LEFT_BRACE,
     RIGHT_BRACE,
+
     SEMICOLON,
     COMMA,
 
-    END_OF_FILE,
-    UNKNOWN
+    TRUE,
+    FALSE,
+    NULL_VALUE,
+
+    UNKNOWN,
+    END_OF_FILE
 };
 
-std::string tokenTypeToString(TokenType type);
-
-class Token {
-
+class Token
+{
 public:
 
     Token(TokenType type, const std::string& lexeme);
 
     TokenType getType() const;
-    std::string getLexeme() const;
+
+    const std::string& getLexeme() const;
+
+    std::string getTypeName() const;
 
 private:
 

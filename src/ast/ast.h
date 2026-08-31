@@ -1,9 +1,14 @@
 #ifndef AST_H
 #define AST_H
 
-#include <memory>
 #include <string>
 #include <vector>
+#include <memory>
+#include <sstream>
+
+// ============================================================
+// BASE AST NODE
+// ============================================================
 
 class ASTNode
 {
@@ -16,61 +21,119 @@ public:
 using ASTNodePtr = std::shared_ptr<ASTNode>;
 
 
-// ===============================
-// Expression Base
-// ===============================
+// ============================================================
+// NUMBER EXPRESSION
+// ============================================================
 
-class Expression : public ASTNode
-{
-};
-
-
-// ===============================
-// Statement Base
-// ===============================
-
-class Statement : public ASTNode
-{
-};
-
-
-// ===============================
-// Number Literal
-// ===============================
-
-class NumberExpression : public Expression
+class NumberExpression : public ASTNode
 {
 private:
     std::string value;
 
 public:
-    NumberExpression(const std::string& value);
+    NumberExpression(const std::string& value)
+        : value(value)
+    {
+    }
 
-    std::string toString() const override;
+    const std::string& getValue() const
+    {
+        return value;
+    }
+
+    std::string toString() const override
+    {
+        return value;
+    }
 };
 
 
-// ===============================
-// Identifier
-// ===============================
+// ============================================================
+// STRING EXPRESSION
+// ============================================================
 
-class IdentifierExpression : public Expression
+class StringExpression : public ASTNode
+{
+private:
+    std::string value;
+
+public:
+    StringExpression(const std::string& value)
+        : value(value)
+    {
+    }
+
+    const std::string& getValue() const
+    {
+        return value;
+    }
+
+    std::string toString() const override
+    {
+        return "\"" + value + "\"";
+    }
+};
+
+
+// ============================================================
+// LITERAL EXPRESSION
+// ============================================================
+
+class LiteralExpression : public ASTNode
+{
+private:
+    std::string value;
+
+public:
+    LiteralExpression(const std::string& value)
+        : value(value)
+    {
+    }
+
+    const std::string& getValue() const
+    {
+        return value;
+    }
+
+    std::string toString() const override
+    {
+        return value;
+    }
+};
+
+
+// ============================================================
+// IDENTIFIER EXPRESSION
+// ============================================================
+
+class IdentifierExpression : public ASTNode
 {
 private:
     std::string name;
 
 public:
-    IdentifierExpression(const std::string& name);
+    IdentifierExpression(const std::string& name)
+        : name(name)
+    {
+    }
 
-    std::string toString() const override;
+    const std::string& getName() const
+    {
+        return name;
+    }
+
+    std::string toString() const override
+    {
+        return name;
+    }
 };
 
 
-// ===============================
-// Binary Expression
-// ===============================
+// ============================================================
+// BINARY EXPRESSION
+// ============================================================
 
-class BinaryExpression : public Expression
+class BinaryExpression : public ASTNode
 {
 private:
     ASTNodePtr left;
@@ -82,17 +145,84 @@ public:
         ASTNodePtr left,
         const std::string& op,
         ASTNodePtr right
-    );
+    )
+        : left(left),
+          op(op),
+          right(right)
+    {
+    }
 
-    std::string toString() const override;
+    const ASTNodePtr& getLeft() const
+    {
+        return left;
+    }
+
+    const ASTNodePtr& getRight() const
+    {
+        return right;
+    }
+
+    const std::string& getOperator() const
+    {
+        return op;
+    }
+
+    std::string toString() const override
+    {
+        return "(" +
+               op + " " +
+               left->toString() + " " +
+               right->toString() +
+               ")";
+    }
 };
 
 
-// ===============================
-// Variable Declaration
-// ===============================
+// ============================================================
+// UNARY EXPRESSION
+// ============================================================
 
-class VariableDeclaration : public Statement
+class UnaryExpression : public ASTNode
+{
+private:
+    std::string op;
+    ASTNodePtr right;
+
+public:
+    UnaryExpression(
+        const std::string& op,
+        ASTNodePtr right
+    )
+        : op(op),
+          right(right)
+    {
+    }
+
+    const std::string& getOperator() const
+    {
+        return op;
+    }
+
+    const ASTNodePtr& getRight() const
+    {
+        return right;
+    }
+
+    std::string toString() const override
+    {
+        return "(" +
+               op + " " +
+               right->toString() +
+               ")";
+    }
+};
+
+
+// ============================================================
+// VARIABLE DECLARATION
+// ============================================================
+
+class VariableDeclaration : public ASTNode
 {
 private:
     std::string name;
@@ -102,50 +232,180 @@ public:
     VariableDeclaration(
         const std::string& name,
         ASTNodePtr initializer
-    );
-
-    std::string toString() const override;
-};
-
-
-// ===============================
-// Function Declaration
-// ===============================
-
-class FunctionDeclaration : public Statement
-{
-private:
-    std::string name;
-    std::vector<std::string> parameters;
-    std::vector<ASTNodePtr> body;
-
-public:
-    FunctionDeclaration(
-        const std::string& name,
-        const std::vector<std::string>& parameters,
-        const std::vector<ASTNodePtr>& body
-    );
-
-    std::string toString() const override;
-};
-class UnaryExpression : public ASTNode
-{
-public:
-    UnaryExpression(
-        const std::string& op,
-        ASTNodePtr right
     )
-        : op(op), right(right)
+        : name(name),
+          initializer(initializer)
     {
+    }
+
+    const std::string& getName() const
+    {
+        return name;
+    }
+
+    const ASTNodePtr& getInitializer() const
+    {
+        return initializer;
     }
 
     std::string toString() const override
     {
-        return "(" + op + " " + right->toString() + ")";
+        return "(var " +
+               name + " " +
+               initializer->toString() +
+               ")";
+    }
+};
+
+
+// ============================================================
+// CALL EXPRESSION
+// ============================================================
+
+class CallExpression : public ASTNode
+{
+private:
+    ASTNodePtr callee;
+    std::vector<ASTNodePtr> arguments;
+
+public:
+    CallExpression(
+        ASTNodePtr callee,
+        const std::vector<ASTNodePtr>& arguments
+    )
+        : callee(callee),
+          arguments(arguments)
+    {
     }
 
-private:
-    std::string op;
-    ASTNodePtr right;
+    const ASTNodePtr& getCallee() const
+    {
+        return callee;
+    }
+
+    const std::vector<ASTNodePtr>& getArguments() const
+    {
+        return arguments;
+    }
+
+    std::string toString() const override
+    {
+        std::ostringstream result;
+
+        result << "(Call "
+               << callee->toString();
+
+        for (const auto& argument : arguments)
+        {
+            result << " "
+                   << argument->toString();
+        }
+
+        result << ")";
+
+        return result.str();
+    }
 };
+
+
+// ============================================================
+// BLOCK STATEMENT
+// ============================================================
+
+class BlockStatement : public ASTNode
+{
+private:
+    std::vector<ASTNodePtr> statements;
+
+public:
+    BlockStatement(
+        const std::vector<ASTNodePtr>& statements
+    )
+        : statements(statements)
+    {
+    }
+
+    const std::vector<ASTNodePtr>& getStatements() const
+    {
+        return statements;
+    }
+
+    std::string toString() const override
+    {
+        std::ostringstream result;
+
+        result << "(block";
+
+        for (const auto& statement : statements)
+        {
+            result << " "
+                   << statement->toString();
+        }
+
+        result << ")";
+
+        return result.str();
+    }
+};
+
+
+// ============================================================
+// IF STATEMENT
+// ============================================================
+
+class IfStatement : public ASTNode
+{
+private:
+    ASTNodePtr condition;
+    ASTNodePtr thenBranch;
+    ASTNodePtr elseBranch;
+
+public:
+    IfStatement(
+        ASTNodePtr condition,
+        ASTNodePtr thenBranch,
+        ASTNodePtr elseBranch = nullptr
+    )
+        : condition(condition),
+          thenBranch(thenBranch),
+          elseBranch(elseBranch)
+    {
+    }
+
+    const ASTNodePtr& getCondition() const
+    {
+        return condition;
+    }
+
+    const ASTNodePtr& getThenBranch() const
+    {
+        return thenBranch;
+    }
+
+    const ASTNodePtr& getElseBranch() const
+    {
+        return elseBranch;
+    }
+
+    std::string toString() const override
+    {
+        std::ostringstream result;
+
+        result << "(if "
+               << condition->toString()
+               << " "
+               << thenBranch->toString();
+
+        if (elseBranch)
+        {
+            result << " "
+                   << elseBranch->toString();
+        }
+
+        result << ")";
+
+        return result.str();
+    }
+};
+
 #endif
