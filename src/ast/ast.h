@@ -259,6 +259,46 @@ public:
 
 
 // ============================================================
+// ASSIGNMENT EXPRESSION
+// ============================================================
+
+class AssignmentExpression : public ASTNode
+{
+private:
+    std::string name;
+    ASTNodePtr value;
+
+public:
+    AssignmentExpression(
+        const std::string& name,
+        ASTNodePtr value
+    )
+        : name(name),
+          value(value)
+    {
+    }
+
+    const std::string& getName() const
+    {
+        return name;
+    }
+
+    const ASTNodePtr& getValue() const
+    {
+        return value;
+    }
+
+    std::string toString() const override
+    {
+        return "(assign " +
+               name + " " +
+               value->toString() +
+               ")";
+    }
+};
+
+
+// ============================================================
 // CALL EXPRESSION
 // ============================================================
 
