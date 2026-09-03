@@ -2,45 +2,26 @@
 
 #include <stdexcept>
 
-
 Parser::Parser(const std::vector<Token>& tokens)
     : tokens(tokens), current(0)
 {
 }
 
-
-// ============================================================
-// PROGRAM
-// ============================================================
-
 std::vector<ASTNodePtr> Parser::parse()
 {
     std::vector<ASTNodePtr> statements;
 
-    // kaam shuru { ... }
-
     if (match(TokenType::KAAM))
     {
-        consume(
-            TokenType::SHURU,
-            "Expected 'shuru' after 'kaam'."
-        );
-
-        consume(
-            TokenType::LEFT_BRACE,
-            "Expected '{' after 'kaam shuru'."
-        );
+        consume(TokenType::SHURU, "Expected 'shuru' after 'kaam'.");
+        consume(TokenType::LEFT_BRACE, "Expected '{' after 'kaam shuru'.");
 
         while (!check(TokenType::RIGHT_BRACE) && !isAtEnd())
         {
             statements.push_back(statement());
         }
 
-        consume(
-            TokenType::RIGHT_BRACE,
-            "Expected '}' after program."
-        );
-
+        consume(TokenType::RIGHT_BRACE, "Expected '}' after program.");
         return statements;
     }
 
@@ -52,28 +33,20 @@ std::vector<ASTNodePtr> Parser::parse()
     return statements;
 }
 
-
-// ============================================================
-// PARSER UTILITIES
-// ============================================================
-
 bool Parser::isAtEnd()
 {
     return peek().getType() == TokenType::END_OF_FILE;
 }
-
 
 Token Parser::peek()
 {
     return tokens[current];
 }
 
-
 Token Parser::previous()
 {
     return tokens[current - 1];
 }
-
 
 Token Parser::advance()
 {
@@ -85,7 +58,6 @@ Token Parser::advance()
     return previous();
 }
 
-
 bool Parser::check(TokenType type)
 {
     if (isAtEnd())
@@ -95,7 +67,6 @@ bool Parser::check(TokenType type)
 
     return peek().getType() == type;
 }
-
 
 bool Parser::match(TokenType type)
 {
@@ -108,11 +79,7 @@ bool Parser::match(TokenType type)
     return true;
 }
 
-
-Token Parser::consume(
-    TokenType type,
-    const std::string& message
-)
+Token Parser::consume(TokenType type, const std::string& message)
 {
     if (check(type))
     {
@@ -121,11 +88,6 @@ Token Parser::consume(
 
     throw std::runtime_error(message);
 }
-
-
-// ============================================================
-// STATEMENTS
-// ============================================================
 
 ASTNodePtr Parser::statement()
 {
@@ -146,25 +108,14 @@ ASTNodePtr Parser::statement()
 
     ASTNodePtr expr = expression();
 
-    consume(
-        TokenType::SEMICOLON,
-        "Expected ';' after expression."
-    );
+    consume(TokenType::SEMICOLON, "Expected ';' after expression.");
 
     return expr;
 }
 
-
-// ============================================================
-// VARIABLE DECLARATION
-// ============================================================
-
 ASTNodePtr Parser::variableDeclaration()
 {
-    consume(
-        TokenType::GHE,
-        "Expected 'ghe'."
-    );
+    consume(TokenType::GHE, "Expected 'ghe'.");
 
     Token name = consume(
         TokenType::IDENTIFIER,
@@ -189,27 +140,11 @@ ASTNodePtr Parser::variableDeclaration()
     );
 }
 
-
-// ============================================================
-// FUNCTION / PROGRAM DECLARATION
-// ============================================================
-
 ASTNodePtr Parser::functionDeclaration()
 {
-    consume(
-        TokenType::KAAM,
-        "Expected 'kaam'."
-    );
-
-    consume(
-        TokenType::SHURU,
-        "Expected 'shuru' after 'kaam'."
-    );
-
-    consume(
-        TokenType::LEFT_BRACE,
-        "Expected '{' after 'kaam shuru'."
-    );
+    consume(TokenType::KAAM, "Expected 'kaam'.");
+    consume(TokenType::SHURU, "Expected 'shuru' after 'kaam'.");
+    consume(TokenType::LEFT_BRACE, "Expected '{' after 'kaam shuru'.");
 
     std::vector<ASTNodePtr> statements;
 
@@ -218,42 +153,21 @@ ASTNodePtr Parser::functionDeclaration()
         statements.push_back(statement());
     }
 
-    consume(
-        TokenType::RIGHT_BRACE,
-        "Expected '}' after block."
-    );
+    consume(TokenType::RIGHT_BRACE, "Expected '}' after block.");
 
-    return std::make_shared<BlockStatement>(
-        statements
-    );
+    return std::make_shared<BlockStatement>(statements);
 }
-
-
-// ============================================================
-// IF / ELSE
-// ============================================================
 
 ASTNodePtr Parser::ifStatement()
 {
-    consume(
-        TokenType::JALLARI,
-        "Expected 'jallari'."
-    );
-
-    consume(
-        TokenType::LEFT_PAREN,
-        "Expected '(' after 'jallari'."
-    );
+    consume(TokenType::JALLARI, "Expected 'jallari'.");
+    consume(TokenType::LEFT_PAREN, "Expected '(' after 'jallari'.");
 
     ASTNodePtr condition = expression();
 
-    consume(
-        TokenType::RIGHT_PAREN,
-        "Expected ')' after condition."
-    );
+    consume(TokenType::RIGHT_PAREN, "Expected ')' after condition.");
 
     ASTNodePtr thenBranch = block();
-
     ASTNodePtr elseBranch = nullptr;
 
     if (match(TokenType::NAJALLARI))
@@ -268,17 +182,9 @@ ASTNodePtr Parser::ifStatement()
     );
 }
 
-
-// ============================================================
-// BLOCK
-// ============================================================
-
 ASTNodePtr Parser::block()
 {
-    consume(
-        TokenType::LEFT_BRACE,
-        "Expected '{'."
-    );
+    consume(TokenType::LEFT_BRACE, "Expected '{'.");
 
     std::vector<ASTNodePtr> statements;
 
@@ -287,26 +193,45 @@ ASTNodePtr Parser::block()
         statements.push_back(statement());
     }
 
-    consume(
-        TokenType::RIGHT_BRACE,
-        "Expected '}' after block."
-    );
+    consume(TokenType::RIGHT_BRACE, "Expected '}' after block.");
 
-    return std::make_shared<BlockStatement>(
-        statements
-    );
+    return std::make_shared<BlockStatement>(statements);
 }
-
-
-// ============================================================
-// EXPRESSIONS
-// ============================================================
 
 ASTNodePtr Parser::expression()
 {
-    return orExpression();
+    return assignment();
 }
 
+ASTNodePtr Parser::assignment()
+{
+    ASTNodePtr left = orExpression();
+
+    if (match(TokenType::ASSIGN))
+    {
+        Token equals = previous();
+        (void)equals;
+
+        ASTNodePtr value = assignment();
+
+        auto identifier =
+            std::dynamic_pointer_cast<IdentifierExpression>(left);
+
+        if (!identifier)
+        {
+            throw std::runtime_error(
+                "Invalid assignment target."
+            );
+        }
+
+        return std::make_shared<AssignmentExpression>(
+            identifier->getName(),
+            value
+        );
+    }
+
+    return left;
+}
 
 ASTNodePtr Parser::orExpression()
 {
@@ -316,17 +241,11 @@ ASTNodePtr Parser::orExpression()
     {
         Token op = previous();
         ASTNodePtr right = andExpression();
-
-        left = std::make_shared<BinaryExpression>(
-            left,
-            op.getLexeme(),
-            right
-        );
+        left = std::make_shared<BinaryExpression>(left, op.getLexeme(), right);
     }
 
     return left;
 }
-
 
 ASTNodePtr Parser::andExpression()
 {
@@ -336,40 +255,25 @@ ASTNodePtr Parser::andExpression()
     {
         Token op = previous();
         ASTNodePtr right = equality();
-
-        left = std::make_shared<BinaryExpression>(
-            left,
-            op.getLexeme(),
-            right
-        );
+        left = std::make_shared<BinaryExpression>(left, op.getLexeme(), right);
     }
 
     return left;
 }
-
 
 ASTNodePtr Parser::equality()
 {
     ASTNodePtr left = comparison();
 
-    while (
-        match(TokenType::EQUAL_EQUAL) ||
-        match(TokenType::NOT_EQUAL)
-    )
+    while (match(TokenType::EQUAL_EQUAL) || match(TokenType::NOT_EQUAL))
     {
         Token op = previous();
         ASTNodePtr right = comparison();
-
-        left = std::make_shared<BinaryExpression>(
-            left,
-            op.getLexeme(),
-            right
-        );
+        left = std::make_shared<BinaryExpression>(left, op.getLexeme(), right);
     }
 
     return left;
 }
-
 
 ASTNodePtr Parser::comparison()
 {
@@ -384,40 +288,25 @@ ASTNodePtr Parser::comparison()
     {
         Token op = previous();
         ASTNodePtr right = term();
-
-        left = std::make_shared<BinaryExpression>(
-            left,
-            op.getLexeme(),
-            right
-        );
+        left = std::make_shared<BinaryExpression>(left, op.getLexeme(), right);
     }
 
     return left;
 }
-
 
 ASTNodePtr Parser::term()
 {
     ASTNodePtr left = factor();
 
-    while (
-        match(TokenType::PLUS) ||
-        match(TokenType::MINUS)
-    )
+    while (match(TokenType::PLUS) || match(TokenType::MINUS))
     {
         Token op = previous();
         ASTNodePtr right = factor();
-
-        left = std::make_shared<BinaryExpression>(
-            left,
-            op.getLexeme(),
-            right
-        );
+        left = std::make_shared<BinaryExpression>(left, op.getLexeme(), right);
     }
 
     return left;
 }
-
 
 ASTNodePtr Parser::factor()
 {
@@ -431,41 +320,23 @@ ASTNodePtr Parser::factor()
     {
         Token op = previous();
         ASTNodePtr right = unary();
-
-        left = std::make_shared<BinaryExpression>(
-            left,
-            op.getLexeme(),
-            right
-        );
+        left = std::make_shared<BinaryExpression>(left, op.getLexeme(), right);
     }
 
     return left;
 }
 
-
 ASTNodePtr Parser::unary()
 {
-    if (
-        match(TokenType::NOT) ||
-        match(TokenType::MINUS)
-    )
+    if (match(TokenType::NOT) || match(TokenType::MINUS))
     {
         Token op = previous();
         ASTNodePtr right = unary();
-
-        return std::make_shared<UnaryExpression>(
-            op.getLexeme(),
-            right
-        );
+        return std::make_shared<UnaryExpression>(op.getLexeme(), right);
     }
 
     return call();
 }
-
-
-// ============================================================
-// FUNCTION CALL
-// ============================================================
 
 ASTNodePtr Parser::call()
 {
@@ -486,15 +357,9 @@ ASTNodePtr Parser::call()
                 while (match(TokenType::COMMA));
             }
 
-            consume(
-                TokenType::RIGHT_PAREN,
-                "Expected ')' after arguments."
-            );
+            consume(TokenType::RIGHT_PAREN, "Expected ')' after arguments.");
 
-            expr = std::make_shared<CallExpression>(
-                expr,
-                arguments
-            );
+            expr = std::make_shared<CallExpression>(expr, arguments);
         }
         else
         {
@@ -505,76 +370,51 @@ ASTNodePtr Parser::call()
     return expr;
 }
 
-
-// ============================================================
-// PRIMARY
-// ============================================================
-
 ASTNodePtr Parser::primary()
 {
     if (match(TokenType::NUMBER))
     {
-        return std::make_shared<NumberExpression>(
-            previous().getLexeme()
-        );
+        return std::make_shared<NumberExpression>(previous().getLexeme());
     }
 
     if (match(TokenType::STRING))
     {
-        return std::make_shared<StringExpression>(
-            previous().getLexeme()
-        );
+        return std::make_shared<StringExpression>(previous().getLexeme());
     }
 
     if (match(TokenType::TRUE))
     {
-        return std::make_shared<LiteralExpression>(
-            previous().getLexeme()
-        );
+        return std::make_shared<LiteralExpression>(previous().getLexeme());
     }
 
     if (match(TokenType::FALSE))
     {
-        return std::make_shared<LiteralExpression>(
-            previous().getLexeme()
-        );
+        return std::make_shared<LiteralExpression>(previous().getLexeme());
     }
 
     if (match(TokenType::NULL_VALUE))
     {
-        return std::make_shared<LiteralExpression>(
-            previous().getLexeme()
-        );
+        return std::make_shared<LiteralExpression>(previous().getLexeme());
     }
 
     if (match(TokenType::IDENTIFIER))
     {
-        return std::make_shared<IdentifierExpression>(
-            previous().getLexeme()
-        );
+        return std::make_shared<IdentifierExpression>(previous().getLexeme());
     }
 
     if (match(TokenType::DHAKE))
     {
-        return std::make_shared<IdentifierExpression>(
-            previous().getLexeme()
-        );
+        return std::make_shared<IdentifierExpression>(previous().getLexeme());
     }
 
     if (match(TokenType::LEFT_PAREN))
     {
         ASTNodePtr expr = expression();
-
-        consume(
-            TokenType::RIGHT_PAREN,
-            "Expected ')' after expression."
-        );
-
+        consume(TokenType::RIGHT_PAREN, "Expected ')' after expression.");
         return expr;
     }
 
     throw std::runtime_error(
-        "Unexpected token: " +
-        peek().getLexeme()
+        "Unexpected token: " + peek().getLexeme()
     );
 }
