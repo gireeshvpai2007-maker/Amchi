@@ -4,7 +4,9 @@
 
 Amchi is a programming language inspired by **GSB Konkani**, my mother tongue, and built from scratch in **C++**.
 
-Amchi is an exploration of bringing a language rooted in our culture into the world of computer science. The goal is not simply to replace English programming keywords with Konkani words, but to understand and build the systems behind a programming language — including **lexing, parsing, abstract syntax trees, interpretation, memory, and eventually compilation**.
+The project explores what it takes to design and implement a programming language — from **lexing and parsing to abstract syntax trees and interpretation**, with compilation and code generation as long-term goals.
+
+Amchi is not simply an attempt to replace English programming keywords with Konkani words. It is a technical and personal exploration of how **language, culture, and computer science** can come together.
 
 ---
 
@@ -16,7 +18,7 @@ As a GSB Konkani speaker, I wanted to explore a simple question:
 
 > **What if the language we speak at home could also be used to write programs?**
 
-Amchi is my attempt to connect my **mother tongue, culture, and computer science** by building a programming language from scratch.
+Amchi is my attempt to connect my **mother tongue, culture, and computer science** by building a programming language from the ground up.
 
 The project is both a technical learning journey and a personal exploration of how language and technology can come together.
 
@@ -31,187 +33,200 @@ kaam shuru() {
 
     dhake(a + b);
 }
-```
 
 Output:
 
-```text
 30
-```
 
-The program begins execution from the special function:
+Program execution begins from the special function:
 
-```amchi
 kaam shuru()
-```
-
----
-
-## Language Keywords
-
-| Amchi Keyword | Meaning |
-|---|---|
-| `ghe` | Variable declaration |
-| `dhake` | Output / Print |
-| `nimgi` | Input |
-| `jallari` | If |
-| `najallari` | Else |
-| `javchvare` | While |
-| `kaam` | Function |
-| `vishay` | Class |
-| `shuru` | Program entry point |
-| `jaag` | Address-of |
-
----
-
-## Language Design
-
-Amchi is designed to be **dynamically typed**.
-
-The programmer does not explicitly specify the datatype of a variable.
-
-```amchi
-ghe age = 19;
+Language Keywords
+Amchi Keyword	Meaning
+ghe	Variable declaration
+dhake	Output / Print
+nimgi	Input
+jallari	If
+najallari	Else
+javchvare	While
+kaam	Function
+vishay	Class
+shuru	Program entry point
+jaag	Address-of
+Language Syntax
+Variables
 ghe name = "Gireesh";
-ghe pi = 3.14;
-ghe student = true;
-```
+ghe age = 19;
 
-The value determines the type.
+Variables are designed to use dynamic typing, where the runtime value determines the type.
 
-Variables can also be reassigned:
+Variable reassignment:
 
-```amchi
 ghe a = 10;
 
 a = 20;
-```
 
-The exact runtime type system will evolve as the interpreter is implemented.
+Runtime type handling is currently being expanded as part of the runtime value system.
 
----
-
-## Core Syntax
-
-### Variables
-
-```amchi
-ghe name = "Gireesh";
-ghe age = 19;
-```
-
-### Output
-
-```amchi
+Output
 dhake("Namaskar!");
-dhake(age);
-```
+dhake(10);
 
-### Input
+Example:
 
-```amchi
+kaam shuru() {
+    ghe name = "Gireesh";
+
+    dhake(name);
+}
+Input
+
+Planned input syntax:
+
 nimgi >> age;
-```
-
-### If / Else
-
-```amchi
+If / Else
 jallari (age >= 18) {
     dhake("Adult");
 }
 najallari {
     dhake("Minor");
 }
-```
+While Loop
 
-### While
+Planned syntax:
 
-```amchi
 ghe i = 1;
 
 javchvare (i <= 5) {
     dhake(i);
     i = i + 1;
 }
-```
+Functions
 
-### Function
+Planned function syntax:
 
-```amchi
 kaam add(a, b) {
     dhake(a + b);
 }
-```
 
-Function definitions **do not end with a semicolon**.
+Function definitions do not end with a semicolon.
 
-### Class
+Classes
 
-```amchi
+Planned class syntax:
+
 vishay Student {
     ghe name;
     ghe age;
 };
-```
 
-Class definitions **end with a semicolon**.
+Class definitions end with a semicolon.
 
-### Object
+Objects
 
-```amchi
+Planned object syntax:
+
 Student s;
-```
 
 Parameterized construction:
 
-```amchi
 Student s("Gireesh", 19);
-```
+Pointers
 
-### Pointer
+Planned pointer syntax:
 
-```amchi
 ghe a = 10;
 ghe *p = jaag(a);
 
 dhake(*p);
-```
+Compiler Architecture
 
----
+Amchi currently follows a traditional language-processing pipeline:
 
-## Compiler Architecture
+             Amchi Source Code
+                     │
+                     ▼
+                   Lexer
+                     │
+                     ▼
+                  Tokens
+                     │
+                     ▼
+                   Parser
+                     │
+                     ▼
+                    AST
+                     │
+                     ▼
+                Interpreter
+                     │
+                     ▼
+                   Output
+1. Lexer
 
-The initial Amchi implementation is planned around the following pipeline:
+The lexer reads Amchi source code and converts it into a stream of tokens.
 
-```text
-        Amchi Source Code
-                │
-                ▼
-             Lexer
-                │
-                ▼
-             Tokens
-                │
-                ▼
-             Parser
-                │
-                ▼
-              AST
-                │
-                ▼
-          Interpreter
-                │
-                ▼
-             Output
-```
+It handles concepts such as:
 
-The long-term goal is to evolve this into a complete compiler pipeline with code generation.
+Keywords
+Identifiers
+Numbers
+Strings
+Operators
+Parentheses
+Braces
+Assignment
+Comments
+2. Parser
 
----
+Amchi uses a recursive-descent parser to transform tokens into a structured representation of the program.
 
-## Project Structure
+Expression parsing follows operator precedence.
 
-```text
+3. Abstract Syntax Tree
+
+The parser builds an Abstract Syntax Tree (AST) representing the structure of the program.
+
+The AST provides the foundation for interpretation and future code generation.
+
+4. Interpreter
+
+The interpreter walks the AST and executes the program.
+
+Current interpreter functionality includes:
+
+Variables
+Arithmetic expressions
+Comparisons
+Logical expressions
+Unary expressions
+Conditional execution
+String literals
+Built-in output
+5. Future Compiler
+
+The long-term goal is to evolve Amchi beyond interpretation toward:
+
+Amchi Source
+     │
+     ▼
+   Lexer
+     │
+     ▼
+   Parser
+     │
+     ▼
+    AST
+     │
+     ▼
+ Intermediate Representation
+     │
+     ▼
+ Code Generation
+     │
+     ▼
+ Executable / Bytecode
+Project Structure
 Amchi/
 │
 ├── README.md
@@ -221,6 +236,7 @@ Amchi/
 │   └── language-usage.md
 │
 ├── examples/
+│   └── *.amchi
 │
 ├── src/
 │   ├── ast/
@@ -230,117 +246,150 @@ Amchi/
 │   └── main.cpp
 │
 └── tests/
-```
+Development Status
+✅ Completed
+ Language design
+ Token system
+ Lexer
+ Recursive-descent parser
+ Abstract Syntax Tree
+ Basic interpreter
+ Variables
+ Variable reassignment
+ Arithmetic expressions
+ Comparison operators
+ Logical operators
+ If / Else
+ String literals
+ Built-in output
+ Expression precedence
+🚧 In Progress
+ Runtime value system
+ Proper boolean values
+ Functions
+ Function parameters and return values
+ While loops
+ Input
+ Better runtime error handling
+ Improved parser error messages
+ Automated test suite
+🔮 Planned
+ Classes
+ Objects
+ Constructors
+ Pointers
+ Memory model
+ Standard library
+ Intermediate representation
+ Bytecode / code generation
+ Native compilation
+Design Philosophy
 
----
+Amchi is being developed around three ideas:
 
-## Development Status
+1. Learn by Building
 
-### ✅ Completed
-- [x] Language design
-- [x] Token system
-- [x] Lexer
-- [x] Recursive-descent parser
-- [x] AST
-- [x] Basic interpreter
-- [x] Variables
-- [x] Arithmetic expressions
-- [x] Comparisons
-- [x] If/else
-- [x] String literals
-- [x] Built-in output
+Instead of only studying compiler theory, the project implements the concepts directly:
 
-### 🚧 In Progress
-- [ ] Runtime value system
-- [ ] Functions
-- [ ] Loops
-- [ ] Better error reporting
-- [ ] Test suite
+Theory
+  ↓
+Implementation
+  ↓
+Testing
+  ↓
+Understanding
+2. Preserve Cultural Identity
 
-### 🔮 Planned
-- [ ] Classes
-- [ ] Objects
-- [ ] Pointers
-- [ ] Standard library
-- [ ] Bytecode/code generation
+Programming languages are usually designed around English terminology.
 
-## Planned Features
+Amchi explores what programming could look like when the syntax is rooted in GSB Konkani.
 
-- [ ] Dynamic variables
-- [ ] Numbers
-- [ ] Strings
-- [ ] Boolean values
-- [ ] Arithmetic operators
-- [ ] Comparison operators
-- [ ] Logical operators
-- [ ] Input and output
-- [ ] Conditional statements
-- [ ] While loops
-- [ ] Functions
-- [ ] Classes
-- [ ] Objects
-- [ ] Constructors
-- [ ] Pointers
-- [ ] Abstract Syntax Tree
-- [ ] Interpreter
-- [ ] Error handling
-- [ ] Standard library
-- [ ] Compiler / code generation
+3. Build the Language Properly
 
-The checklist will be updated as features are actually implemented.
+The goal is not just:
 
----
+English keyword → Konkani keyword
 
-## Documentation
+The goal is to understand and implement the systems underneath:
 
-- **[Language Specification](docs/language-spec.md)** — Formal rules and syntax of Amchi.
-- **[Language Usage Guide](docs/language-usage.md)** — Practical examples and usage.
+Lexical analysis
+Parsing
+AST construction
+Runtime values
+Interpretation
+Memory
+Functions
+Object systems
+Compilation
+Examples
 
----
+Example programs will be maintained in the examples/ directory.
 
-## Built With
+Example:
 
-- **C++**
-- Data Structures and Algorithms
-- Compiler Construction Concepts
-- Git
-- GitHub
+kaam shuru() {
+    ghe a = 10;
+    ghe b = 20;
 
----
+    dhake(a + b);
+}
 
-## Project Status
+Output:
 
-🚧 **Early Development**
+30
 
-Amchi is currently in the language-design and compiler-development stage.
+More examples will be added as the language evolves.
 
-The language specification is being established before implementation begins. Features will be implemented incrementally, with each major compiler component developed and tested independently.
+Documentation
+Language Specification
+Formal syntax and language rules.
+Language Usage Guide
+Practical examples and usage.
+Built With
+C++
+Data Structures & Algorithms
+Compiler Construction Concepts
+Object-Oriented Programming
+Git
+GitHub
+Project Status
 
----
+🚧 Early Development
 
-## The Idea Behind Amchi
+Amchi currently has a working lexer, recursive-descent parser, AST, and basic interpreter.
 
-> **A language spoken at home can also be a language used to build things.**
+The language is being developed incrementally, with each compiler component designed and tested independently.
 
-Amchi is my attempt to bring **GSB Konkani** into the world of programming languages while learning how programming languages and compilers work from the ground up.
+The runtime system and higher-level language features are currently under development.
+
+The Idea Behind Amchi
+
+A language spoken at home can also be a language used to build things.
+
+Amchi is my attempt to bring GSB Konkani into the world of programming languages while learning how programming languages and compilers work from the ground up.
 
 This project is not only about building a compiler.
 
-It is about exploring the intersection of **language, identity, culture, and technology**.
+It is about exploring the intersection of:
 
----
+Language · Identity · Culture · Technology
 
-## Author
+Author
 
-**Gireesh V Pai**
+Gireesh V Pai
 
-BTech Computer Science & Engineering  
+BTech Computer Science & Engineering
 MIT Manipal
 
 GSB Konkani speaker
 
----
-
-## License
+License
 
 License information will be added as the project matures.
+
+
+### One recommendation before you commit this
+
+Make sure the **Completed** section exactly matches what is actually implemented in `src/`. In particular, don't claim functions, loops, booleans, input, classes, or pointers as implemented until the interpreter really supports them.
+
+That accuracy will make Amchi look **far more professional** to someone who actually reads the source code.
