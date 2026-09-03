@@ -234,31 +234,35 @@ Amchi/
 
 ---
 
-## Development Roadmap
+## Development Status
 
-```text
-[1] Language Design
-        ↓
-[2] Lexer
-        ↓
-[3] Token System
-        ↓
-[4] Parser
-        ↓
-[5] Abstract Syntax Tree
-        ↓
-[6] Semantic Analysis
-        ↓
-[7] Interpreter
-        ↓
-[8] Runtime
-        ↓
-[9] Standard Library
-        ↓
-[10] Compiler / Code Generation
-```
+### ✅ Completed
+- [x] Language design
+- [x] Token system
+- [x] Lexer
+- [x] Recursive-descent parser
+- [x] AST
+- [x] Basic interpreter
+- [x] Variables
+- [x] Arithmetic expressions
+- [x] Comparisons
+- [x] If/else
+- [x] String literals
+- [x] Built-in output
 
----
+### 🚧 In Progress
+- [ ] Runtime value system
+- [ ] Functions
+- [ ] Loops
+- [ ] Better error reporting
+- [ ] Test suite
+
+### 🔮 Planned
+- [ ] Classes
+- [ ] Objects
+- [ ] Pointers
+- [ ] Standard library
+- [ ] Bytecode/code generation
 
 ## Planned Features
 
@@ -330,7 +334,7 @@ It is about exploring the intersection of **language, identity, culture, and tec
 
 **Gireesh V Pai**
 
-Computer Science & Engineering  
+BTech Computer Science & Engineering  
 MIT Manipal
 
 GSB Konkani speaker
