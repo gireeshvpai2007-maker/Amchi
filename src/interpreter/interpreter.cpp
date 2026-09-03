@@ -25,27 +25,17 @@ void Interpreter::interpret(
 
 void Interpreter::execute(const ASTNodePtr& node)
 {
-    // --------------------------------------------------------
-    // Variable declaration
-    // --------------------------------------------------------
-
     auto variable =
         std::dynamic_pointer_cast<VariableDeclaration>(node);
 
     if (variable)
     {
-        double value =
+        Value value =
             evaluate(variable->getInitializer());
 
         environment[variable->getName()] = value;
-
         return;
     }
-
-
-    // --------------------------------------------------------
-    // Block statement
-    // --------------------------------------------------------
 
     auto block =
         std::dynamic_pointer_cast<BlockStatement>(node);
@@ -56,24 +46,18 @@ void Interpreter::execute(const ASTNodePtr& node)
         {
             execute(statement);
         }
-
         return;
     }
-
-
-    // --------------------------------------------------------
-    // If statement
-    // --------------------------------------------------------
 
     auto ifStatement =
         std::dynamic_pointer_cast<IfStatement>(node);
 
     if (ifStatement)
     {
-        double condition =
+        Value condition =
             evaluate(ifStatement->getCondition());
 
-        if (condition != 0)
+        if (isTruthy(condition))
         {
             execute(ifStatement->getThenBranch());
         }
@@ -81,14 +65,8 @@ void Interpreter::execute(const ASTNodePtr& node)
         {
             execute(ifStatement->getElseBranch());
         }
-
         return;
     }
-
-
-    // --------------------------------------------------------
-    // Function call
-    // --------------------------------------------------------
 
     auto call =
         std::dynamic_pointer_cast<CallExpression>(node);
@@ -99,11 +77,6 @@ void Interpreter::execute(const ASTNodePtr& node)
         return;
     }
 
-
-    // --------------------------------------------------------
-    // Other expression
-    // --------------------------------------------------------
-
     evaluate(node);
 }
 
@@ -112,14 +85,10 @@ void Interpreter::execute(const ASTNodePtr& node)
 // EVALUATE EXPRESSIONS
 // ============================================================
 
-double Interpreter::evaluate(
+Value Interpreter::evaluate(
     const ASTNodePtr& node
 )
 {
-    // --------------------------------------------------------
-    // Number
-    // --------------------------------------------------------
-
     auto number =
         std::dynamic_pointer_cast<NumberExpression>(node);
 
@@ -128,10 +97,33 @@ double Interpreter::evaluate(
         return std::stod(number->getValue());
     }
 
+    auto stringExpression =
+        std::dynamic_pointer_cast<StringExpression>(node);
 
-    // --------------------------------------------------------
-    // Identifier
-    // --------------------------------------------------------
+    if (stringExpression)
+    {
+        return stringExpression->getValue();
+    }
+
+    auto literal =
+        std::dynamic_pointer_cast<LiteralExpression>(node);
+
+    if (literal)
+    {
+        if (literal->getValue() == "true")
+        {
+            return true;
+        }
+
+        if (literal->getValue() == "false")
+        {
+            return false;
+        }
+
+        throw std::runtime_error(
+            "Unknown literal: " + literal->getValue()
+        );
+    }
 
     auto identifier =
         std::dynamic_pointer_cast<IdentifierExpression>(node);
@@ -153,20 +145,15 @@ double Interpreter::evaluate(
         return it->second;
     }
 
-
-    // --------------------------------------------------------
-    // Binary expression
-    // --------------------------------------------------------
-
     auto binary =
         std::dynamic_pointer_cast<BinaryExpression>(node);
 
     if (binary)
     {
-        double left =
+        Value left =
             evaluate(binary->getLeft());
 
-        double right =
+        Value right =
             evaluate(binary->getRight());
 
         return evaluateBinary(
@@ -176,17 +163,12 @@ double Interpreter::evaluate(
         );
     }
 
-
-    // --------------------------------------------------------
-    // Unary expression
-    // --------------------------------------------------------
-
     auto unary =
         std::dynamic_pointer_cast<UnaryExpression>(node);
 
     if (unary)
     {
-        double right =
+        Value right =
             evaluate(unary->getRight());
 
         return evaluateUnary(
@@ -194,11 +176,6 @@ double Interpreter::evaluate(
             right
         );
     }
-
-
-    // --------------------------------------------------------
-    // Function call
-    // --------------------------------------------------------
 
     auto call =
         std::dynamic_pointer_cast<CallExpression>(node);
@@ -220,11 +197,6 @@ double Interpreter::evaluate(
         std::string functionName =
             callee->getName();
 
-
-        // ----------------------------------------------------
-        // dhake()
-        // ----------------------------------------------------
-
         if (functionName == "dhake")
         {
             if (call->getArguments().size() != 1)
@@ -234,42 +206,18 @@ double Interpreter::evaluate(
                 );
             }
 
-            ASTNodePtr argument =
-                call->getArguments()[0];
+            Value value =
+                evaluate(call->getArguments()[0]);
 
-            // String arguments are handled separately.
-            auto stringExpression =
-                std::dynamic_pointer_cast<StringExpression>(
-                    argument
-                );
-
-            if (stringExpression)
-            {
-                std::cout
-                    << stringExpression->getValue()
-                    << std::endl;
-
-                return 0;
-            }
-
-            double value =
-                evaluate(argument);
-
-            std::cout << value << std::endl;
+            std::cout << valueToString(value) << std::endl;
 
             return value;
         }
-
 
         throw std::runtime_error(
             "Unknown function: " + functionName
         );
     }
-
-
-    // --------------------------------------------------------
-    // Unsupported node
-    // --------------------------------------------------------
 
     throw std::runtime_error(
         "Cannot evaluate AST node."
@@ -281,72 +229,14 @@ double Interpreter::evaluate(
 // BINARY OPERATORS
 // ============================================================
 
-double Interpreter::evaluateBinary(
+Value Interpreter::evaluateBinary(
     const std::string& op,
-    double left,
-    double right
+    const Value& left,
+    const Value& right
 )
 {
-    if (op == "+")
-        return left + right;
-
-    if (op == "-")
-        return left - right;
-
-    if (op == "*")
-        return left * right;
-
-    if (op == "/")
-    {
-        if (right == 0)
-        {
-            throw std::runtime_error(
-                "Division by zero."
-            );
-        }
-
-        return left / right;
-    }
-
-    if (op == "%")
-    {
-        if (right == 0)
-        {
-            throw std::runtime_error(
-                "Modulo by zero."
-            );
-        }
-
-        return static_cast<int>(left) %
-               static_cast<int>(right);
-    }
-
-    if (op == ">")
-        return left > right;
-
-    if (op == "<")
-        return left < right;
-
-    if (op == ">=")
-        return left >= right;
-
-    if (op == "<=")
-        return left <= right;
-
-    if (op == "==")
-        return left == right;
-
-    if (op == "!=")
-        return left != right;
-
-    if (op == "&&")
-        return (left != 0) && (right != 0);
-
-    if (op == "||")
-        return (left != 0) || (right != 0);
-
     throw std::runtime_error(
-        "Unknown binary operator: " + op
+        "Binary operator not implemented yet: " + op
     );
 }
 
@@ -355,16 +245,27 @@ double Interpreter::evaluateBinary(
 // UNARY OPERATORS
 // ============================================================
 
-double Interpreter::evaluateUnary(
+Value Interpreter::evaluateUnary(
     const std::string& op,
-    double right
+    const Value& right
 )
 {
     if (op == "-")
-        return -right;
+    {
+        if (!std::holds_alternative<double>(right))
+        {
+            throw std::runtime_error(
+                "Unary '-' requires a number."
+            );
+        }
+
+        return -std::get<double>(right);
+    }
 
     if (op == "!")
-        return !right;
+    {
+        return !isTruthy(right);
+    }
 
     throw std::runtime_error(
         "Unknown unary operator: " + op
