@@ -3,6 +3,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <memory>
+#include <cmath>
 
 // ============================================================
 // INTERPRET PROGRAM
@@ -235,8 +236,125 @@ Value Interpreter::evaluateBinary(
     const Value& right
 )
 {
+    // --------------------------------------------------------
+    // Arithmetic and string concatenation
+    // --------------------------------------------------------
+
+    if (op == "+")
+    {
+        if (std::holds_alternative<double>(left) &&
+            std::holds_alternative<double>(right))
+        {
+            return std::get<double>(left) +
+                   std::get<double>(right);
+        }
+
+        if (std::holds_alternative<std::string>(left) &&
+            std::holds_alternative<std::string>(right))
+        {
+            return std::get<std::string>(left) +
+                   std::get<std::string>(right);
+        }
+
+        throw std::runtime_error(
+            "Operator '+' requires two numbers or two strings."
+        );
+    }
+
+    if (op == "-" || op == "*" || op == "/" || op == "%")
+    {
+        if (!std::holds_alternative<double>(left) ||
+            !std::holds_alternative<double>(right))
+        {
+            throw std::runtime_error(
+                "Operator '" + op + "' requires two numbers."
+            );
+        }
+
+        double l = std::get<double>(left);
+        double r = std::get<double>(right);
+
+        if ((op == "/" || op == "%") && r == 0)
+        {
+            throw std::runtime_error(
+                "Division by zero."
+            );
+        }
+
+        if (op == "-") return l - r;
+        if (op == "*") return l * r;
+        if (op == "/") return l / r;
+        return std::fmod(l, r);
+    }
+
+    // --------------------------------------------------------
+    // Numeric comparisons
+    // --------------------------------------------------------
+
+    if (op == ">" || op == "<" || op == ">=" || op == "<=")
+    {
+        if (!std::holds_alternative<double>(left) ||
+            !std::holds_alternative<double>(right))
+        {
+            throw std::runtime_error(
+                "Operator '" + op + "' requires two numbers."
+            );
+        }
+
+        double l = std::get<double>(left);
+        double r = std::get<double>(right);
+
+        if (op == ">")  return l > r;
+        if (op == "<")  return l < r;
+        if (op == ">=") return l >= r;
+        return l <= r;
+    }
+
+    // --------------------------------------------------------
+    // Equality
+    // --------------------------------------------------------
+
+    if (op == "==" || op == "!=")
+    {
+        bool equal = false;
+
+        if (left.index() == right.index())
+        {
+            if (std::holds_alternative<double>(left))
+            {
+                equal = std::get<double>(left) ==
+                        std::get<double>(right);
+            }
+            else if (std::holds_alternative<std::string>(left))
+            {
+                equal = std::get<std::string>(left) ==
+                        std::get<std::string>(right);
+            }
+            else if (std::holds_alternative<bool>(left))
+            {
+                equal = std::get<bool>(left) ==
+                        std::get<bool>(right);
+            }
+        }
+
+        return op == "==" ? equal : !equal;
+    }
+
+    // --------------------------------------------------------
+    // Logical operators
+    // --------------------------------------------------------
+
+    if (op == "&&" || op == "||")
+    {
+        bool l = isTruthy(left);
+        bool r = isTruthy(right);
+
+        if (op == "&&") return l && r;
+        return l || r;
+    }
+
     throw std::runtime_error(
-        "Binary operator not implemented yet: " + op
+        "Unknown binary operator: " + op
     );
 }
 
