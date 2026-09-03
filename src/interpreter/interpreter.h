@@ -7,28 +7,37 @@
 #include <vector>
 
 #include "../ast/ast.h"
+#include "value.h"
 
 class Interpreter
 {
 public:
-    void interpret(const std::vector<ASTNodePtr>& statements);
-
-private:
-    std::unordered_map<std::string, double> environment;
-
-    void execute(const ASTNodePtr& node);
-
-    double evaluate(const ASTNodePtr& node);
-
-    double evaluateBinary(
-        const std::string& op,
-        double left,
-        double right
+    void interpret(
+        const std::vector<ASTNodePtr>& statements
     );
 
-    double evaluateUnary(
+private:
+
+    // Variable name -> runtime value
+    std::unordered_map<std::string, Value> environment;
+
+    void execute(
+        const ASTNodePtr& node
+    );
+
+    Value evaluate(
+        const ASTNodePtr& node
+    );
+
+    Value evaluateBinary(
         const std::string& op,
-        double right
+        const Value& left,
+        const Value& right
+    );
+
+    Value evaluateUnary(
+        const std::string& op,
+        const Value& right
     );
 };
 
