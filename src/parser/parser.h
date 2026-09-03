@@ -19,7 +19,6 @@ private:
     const std::vector<Token>& tokens;
     int current;
 
-    // Parser utilities
     bool isAtEnd();
     Token peek();
     Token previous();
@@ -33,15 +32,14 @@ private:
         const std::string& message
     );
 
-    // Statements
     ASTNodePtr statement();
     ASTNodePtr variableDeclaration();
     ASTNodePtr functionDeclaration();
     ASTNodePtr ifStatement();
     ASTNodePtr block();
 
-    // Expressions
     ASTNodePtr expression();
+    ASTNodePtr assignment();
     ASTNodePtr orExpression();
     ASTNodePtr andExpression();
     ASTNodePtr equality();
